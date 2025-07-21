@@ -1,4 +1,4 @@
-# ⚡️ Quant Energy Pricer
+# ⚡️ Quant Energy Pricing
 
 ![Demo screenshot](/test/demo.png)
 
