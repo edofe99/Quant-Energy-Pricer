@@ -36,7 +36,7 @@ A tool for pricing full‑load energy contracts.
   - Prof. [Gnoatto Alessandro](https://www.linkedin.com/in/alessandro-gnoatto-b184143b/) at [University of Verona](https://www.univr.it/en/university).
 
 Thanks for stopping by 🙂
-Feel welcome to open Issues or Pull Requests, or also to suggest new features.
+Feel welcome to open Issues, Pull Requests, or also to suggest new features.
 
 ---
 This project was released under the MIT license.
