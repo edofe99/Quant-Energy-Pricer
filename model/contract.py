@@ -275,7 +275,7 @@ class Contract:
         expectedSigma = loadSeasonalVolatilityModel.calcMonthlyVariance().expectedMonthlyVariance
 
         initial_guess  = [0, 2, 50, 1, 40]
-        loadSeasonalVolatilityModel.fitSeasonalVolatility(initial_guess)
+        loadSeasonalVolatilityModel.fit(initial_guess)
 
         self.volatility_df = pd.DataFrame()
         self.volatility_df['FittedVariance'] = loadSeasonalVolatilityModel.getCurve(np.arange(1,366))

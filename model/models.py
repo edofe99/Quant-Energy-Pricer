@@ -514,7 +514,7 @@ class LoadSeasonalVolatilityModel:
             + a1 * np.cos((t - a2 - self.H) * 2 * np.pi / self.D) 
             + a3 * np.cos((t - a4 - self.H) * 4 * np.pi / self.D))
     
-    def fitSeasonalVolatility(self, initial_guess):
+    def fit(self, initial_guess):
         # Creating a vector with mid-month day numbers
         # (e.g., 45 = 14 February)
         # We will use values to indicise montly variances
