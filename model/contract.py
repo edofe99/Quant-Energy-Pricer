@@ -278,10 +278,11 @@ class Contract:
         loadSeasonalVolatilityModel.fitSeasonalVolatility(initial_guess)
 
         self.volatility_df = pd.DataFrame()
-        self.volatility_df['FittedVariance'] = loadSeasonalVolatilityModel.getCurve()
+        self.volatility_df['FittedVariance'] = loadSeasonalVolatilityModel.getCurve(np.arange(1,366))
         self.volatility_df['MonthlyVariance'] = expectedSigma.set_index('days')['Variance']
         
-        df['Sigma_AR'] = np.sqrt(loadSeasonalVolatilityModel.sigma_sq_SeasonalFunction(np.arange(2,len(df)+2),loadSeasonalVolatilityModel.params))
+        # df['Sigma_AR'] = np.sqrt(loadSeasonalVolatilityModel.sigma_sq_SeasonalFunction(np.arange(2,len(df)+2),loadSeasonalVolatilityModel.params))
+        df['Sigma_AR'] = np.sqrt(loadSeasonalVolatilityModel.getCurve(np.arange(2,len(df)+2)))
         df['Residuals3'] = df['Residuals2'] / df['Sigma_AR']
         
         # ---------------------- 4. Simulating the customer Load --------------------- #
@@ -465,7 +466,7 @@ class Contract:
         # ------------------------------ Spot component ------------------------------ #
 
         # Seasonal curve and Log Price
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.spot_df.set_index('Date')[['LogPrice','Seasonal Curve']].plot(ax=ax)
         ax.set_title("Log Price with Seasonal fitted Curve")
         ax.set_xlabel(None)
@@ -474,7 +475,7 @@ class Contract:
         self.figures.append(fig)
 
         # Seasonal Curve Projection
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.df_projection.set_index('Date')[['Seasonal Projection']].plot(ax=ax)
         ax.set_title("3 Years Projected Seasonal Curve")
         ax.set_xlabel(None)
@@ -483,7 +484,7 @@ class Contract:
         self.figures.append(fig)
 
         # Stochastic component of log price
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.spot_df.set_index('Date')[['LogSeasonalResiduals']].plot(ax=ax)
         ax.set_title("Stochastic component of spot prices")
         ax.set_xlabel(None)
@@ -492,7 +493,7 @@ class Contract:
         self.figures.append(fig)
 
         # Stochastic curve projection
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.st_projection.iloc[:365, :10].plot(ax=ax, legend=False)
         ax.set_title("1 Year Projected Stochastic Curve simulations")
         ax.set_xlabel(None)
@@ -503,7 +504,7 @@ class Contract:
         self.sample_simulations['Date'] = pd.date_range(
             start=self.spot_df['Date'].iloc[-1],
             periods=len(self.sample_simulations), freq='D')                 
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.sample_simulations.set_index('Date').iloc[:,:10].plot(ax=ax,legend=False)
         ax.set_xlabel(None)
         ax.set_title(r"Spot simulations under $\mathbb{P}$")
@@ -511,7 +512,7 @@ class Contract:
         self.figures.append(fig)
 
         # Average price under P with forward
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.expected_price_p.plot(ax=ax)
         self.fw_df.set_index('Date')[['Close']].plot(ax=ax)
         ax.set_title(r'Expected Spot-Price under $\mathbb{P}$ vs. Forward Curve')
@@ -522,7 +523,7 @@ class Contract:
         #ax.legend(labels=['Observed Forward Curve','Theoretical Curve', 'Calibrated Curve'])
 
         # Stochastic component of log price
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.spot_df.set_index('Date')[['LogResiduals']].plot(ax=ax)
         ax.set_title("Stochastic component of spot prices")
         ax.set_xlabel(None)
@@ -531,7 +532,7 @@ class Contract:
         self.figures.append(fig)
 
         # Alphas
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.alphas.plot(ax=ax)
         ax.set_title(r'Calibrated $\alpha^*(t)$ function')
         ax.set_xlabel(None)
@@ -540,7 +541,7 @@ class Contract:
         self.figures.append(fig)
 
         # Calibrated forward curve 
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.fw_df.set_index('Date')[['Close','Theoretical curve','Calibrated curve']].plot(ax=ax)
         ax.set_title('Calibration of the forward curve')
         ax.set_xlabel(None)
@@ -549,7 +550,7 @@ class Contract:
         self.figures.append(fig)
         
         # Spot simulations under Q
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.simulatedPrice_all.iloc[:,:50].plot(legend=False, ax = ax)
         ax.set_title(r"Spot simulations under $\mathbb{Q}$")
         ax.set_xlabel(None)
@@ -557,7 +558,7 @@ class Contract:
         self.figures.append(fig)
 
         # Average simulation path vs Forward curve
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.fw_df['Average simulations'] = self.simulatedPrice_all.mean(axis=1).values
         self.fw_df.set_index('Date')[['Close','Average simulations']].plot(ax=ax, label=None)
         ax.legend(labels=['Observed Forward Curve', f'Average path of {self.number_simulations} simulations'])
@@ -569,7 +570,7 @@ class Contract:
         # ------------------------------ Load component ------------------------------ #
         
         # Print Load data
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.load_df_full.set_index('Date')[['Value']].plot(ax=ax, legend=False)
         #ax.legend(labels=['Forecasted Load Mwh', 'Seasonal fitted curve'])
         ax.set_title('Load consumptions')
@@ -586,9 +587,8 @@ class Contract:
         ax.set_ylabel("Load [Mwh]")
         self.figures.append(fig)
 
-
         # Load residuals
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5),constrained_layout=True)
         self.simulatedLoad_all.set_index('Date')[['Residuals']].plot(ax=ax, legend = False)
         ax.set_title('Load residuals')
         ax.set_xlabel(None)
@@ -596,8 +596,8 @@ class Contract:
         self.figures.append(fig)
 
         # Residuals ACF and PACF
-        lag = 50
-        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+        lag = 100
+        fig, axes = plt.subplots(2, 1, figsize=(10, 5), constrained_layout=True)
         # ACF plot
         plot_acf(self.simulatedLoad_all['Residuals'], lags=lag, ax=axes[0], alpha=0.05, use_vlines=True, marker='')
         axes[0].set_title('ACF')
@@ -607,31 +607,32 @@ class Contract:
         # plt.tight_layout()
         self.figures.append(fig)
 
-        # Load residuals2
-        fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 5))  # Adjust figsize as needed
-        self.simulatedLoad_all.set_index('Date')[['Residuals2']].plot(ax=ax[0], legend = False)
+        # Residuals from AR(1)
+        fig, ax = plt.subplots(2, 1, figsize=(10, 5), constrained_layout=True)  # or use tight_layout later
+        self.simulatedLoad_all.set_index('Date')[['Residuals2']].plot(ax=ax[0], legend=False)
         ax[0].set_title('Residuals from AR(1)')
         ax[0].set_xlabel(None)
-        ax[0].set_ylabel("Load [Mwh]")
+        ax[0].set_ylabel("Load [MWh]")
+
         squared_residuals = self.simulatedLoad_all.set_index('Date')[['Residuals2']] ** 2
-        squared_residuals.plot(ax=ax[1], legend = False)
-        ax[1].set_title('Squared Residuals from AR(1)')
+        squared_residuals.plot(ax=ax[1], legend=False)
+        ax[1].set_title('Squared Residuals from AR(1)', pad=6)  # add a little padding
         ax[1].set_xlabel(None)
         ax[1].set_ylabel(None)
         self.figures.append(fig)
 
         # Monthly Variance fitted
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         self.volatility_df[['FittedVariance']].plot(style='-', ax = ax)
         self.volatility_df[['MonthlyVariance']].plot(style='o', ax=ax)
-        ax.legend(labels=['Fitted variance', 'Observed monthly variance'])
+        ax.legend(labels=['Fitted variance', 'Observed avg. Monthly Variance'])
         ax.set_title('Fitting the monthly variance of the load')
         ax.set_xlabel("Monthly variance over a year")
         ax.set_ylabel("Load variance")
         self.figures.append(fig)
 
         # Plot simulated load
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         load = self.simulatedLoad
         load['Date'] = self.fw_df['Date'].iloc[:len(load)]
         load.set_index('Date').iloc[:,:100].plot(label='Simulated Load',ax=ax)

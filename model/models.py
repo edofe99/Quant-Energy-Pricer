@@ -489,20 +489,14 @@ class LoadSeasonalVolatilityModel:
         self.params = None
 
     def calcMonthlyVariance(self):        
-        date_sq_residuals = self.df['Date'].iloc[1:].reset_index(drop=True)
-        sq_residuals_trimmed = self.df['Sq_Residuals2'].iloc[:-1].reset_index(drop=True)
-
-        # Ensure that `Date` is of datetime type.
-        # Extract the month from the dates
-        months = date_sq_residuals.dt.month
-        # Group by month and compute mean
-        monthly_mean = sq_residuals_trimmed.groupby(months).mean()
-
-        # Convert to a DataFrame with a descriptive column name
-        self.expectedMonthlyVariance = monthly_mean.to_frame(name='Variance')
-        #Optionally, set a name for the index (i.e., "Month")
+        # Grpup sq_residuals by month and compute mean
+        monthly_residuals_avg = self.df.groupby(self.df['Date'].dt.month)['Sq_Residuals2'].mean()
+        # Move the result into a new dataframe
+        self.expectedMonthlyVariance = monthly_residuals_avg.to_frame(name='Variance')
+        # Change index to go from 1 to 12
         self.expectedMonthlyVariance.index = np.arange(1,13)
         self.expectedMonthlyVariance.index.name = 'Month'
+
         return self
     
     def calcModel(self, t, a0, a1, a2, a3, a4):
@@ -520,69 +514,40 @@ class LoadSeasonalVolatilityModel:
             + a1 * np.cos((t - a2 - self.H) * 2 * np.pi / self.D) 
             + a3 * np.cos((t - a4 - self.H) * 4 * np.pi / self.D))
     
-    def sigma_sq_SeasonalFunction(self,t,params):
-        '''
-        Seasonal function sigma^2(t) for the load volatility.
-        '''
-        c0 = params[0]
-        c1 = params[1]
-        c2 = params[2]
-        return c0 + c1 * np.cos((2 * np.pi / 365) * (t - c2))
-
     def fitSeasonalVolatility(self, initial_guess):
-        # ## Creating a vector with mid-month day numbers
-        # ## (e.g., 45 = 14 February)
+        # Creating a vector with mid-month day numbers
+        # (e.g., 45 = 14 February)
         # We will use values to indicise montly variances
         days = np.array([16, 45, 75, 105, 136, 166, 197, 228, 258, 289, 319, 350])
         self.expectedMonthlyVariance['days'] = days
         # Step 3: Fit the model using curve_fit
-        self.params, covariance = curve_fit(self.calcModel, self.expectedMonthlyVariance['days'].values, self.expectedMonthlyVariance['Variance'].values, p0=initial_guess)
+        self.params, covariance = curve_fit(self.calcModel, days, self.expectedMonthlyVariance['Variance'].values, p0=initial_guess)
+        
+        ## DEBUGGING: uncommet in order to check significativity of parameters
+        # from scipy.stats import t
+        # se    = np.sqrt(np.diag(covariance))
+        # dof   = len(days) - len(self.params)
+        # pvals = 2 * t.sf(np.abs(self.params / se), dof)
+        # print(pvals)
 
         return self
-
-    def getCurve(self):
-        '''
-        Returns:
-        A series (curve) of the non-linear load seasonal volatility function with fitted parameters.
-        '''
+    
+    def getCurve(self, t = None):
         if self.params is None:
             raise ValueError("The model has not been fitted yet. Call 'fit()' first.")
-        
-        #curve = np.zeros(np.arange(366))
-        curve = self.sigma_sq_SeasonalFunction(np.arange(1,366),self.params)
-        
-        return curve
+        if t is None:
+            t = self.t
+        return self.calcModel(t, *self.params)
 
-    #     # Indipendent variables
-    #     self.t = np.arange(len(self.df))
-    #     self.price = self.df['Close']
-    #     self.TimePrice = (self.t, self.price)
-
-    #     self.D = D
-    #     self.H =  self.df['Date'].iloc[0].dayofyear
-
-    #     self.params = None  # Placeholder for fitted parameters
-
-            
-    # def fit(self, colToFit, initial_guess):
-    #     """
-    #     Fit the model to data by optimizing alpha.
-
-    #     Parameters:
-    #     - colToFit: name of the column, inside the input dataframe, to use to calculate the parameters. 
-    #     - initial_guess: initial guesses for the parameters.
-        
-    #     Returns:
-    #     - params: The parameters fitted for the model.
-    #     - covariance: Covariance matrix of the fit.
-    #     """ 
-    #     # The column of the dataframe to be used in order to fit the data
-    #     df_fit = self.df[f'{colToFit}'].dropna().reset_index(drop=True)
-        
-    #     self.params, covariance = curve_fit(self.calcModel, self.TimePrice, df_fit, p0=initial_guess)
-
-    #     return self
-
+    # Use this if a3, a4 ends up not being significant
+    # def calcModel(self,t,params):
+    #     '''
+    #     Seasonal function sigma^2(t) for the load volatility.
+    #     '''
+    #     c0 = params[0]
+    #     c1 = params[1]
+    #     c2 = params[2]
+    #     return c0 + c1 * np.cos((2 * np.pi / 365) * (t - c2))
 
 class LoadStochasticModel:
     def __init__(self, data, loadSeasonalModel):
@@ -698,7 +663,7 @@ class LoadModel:
         y = np.zeros(N)                  # Initialize y for stochastic AR(1)
         
         ### Calculating the standard deviations for each day
-        sigma_AR = np.sqrt(self.seasonalVolatilityModel.sigma_sq_SeasonalFunction(simulatedPrice.index+1,self.seasonalVolatilityParams))
+        sigma_AR = np.sqrt(self.seasonalVolatilityModel.getCurve(simulatedPrice.index+1))
         simulations = np.zeros((days, N))
 
         for i in range(days):
