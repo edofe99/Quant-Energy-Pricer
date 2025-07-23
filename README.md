@@ -4,7 +4,7 @@
 
 A tool for pricing full‑load energy contracts.
 
-> In a full load contract the client pays a fixed price and the seller will deliver, regardless of amount consumed or variation in the market price.
+> In a full load contract the client pays a fixed price and the seller will deliver, regardless of amount consumed or variation of the market price.
 
 
 ## 🔧 Key Features
