@@ -4,7 +4,8 @@
 
 A tool for pricing full‑load energy contracts.
 
-> A full‑load contract locks in a constant power delivery or energy volume over a set term. The buyer pays, and the seller delivers, the full amount regardless of actual usage.
+> In a full load contract the client pays a fixed price and the seller will deliver, regardless of amount consumed or variation in the market price.
+
 
 ## 🔧 Key Features
 
