@@ -118,16 +118,16 @@ class Contract:
         return data
 
     @staticmethod
-    def calculate_cfetl(profit, confidence):
+    def calculate_es(profit, confidence):
         """
-        Calculate the Conditional Expected Tail Loss (CFETL).
+        Calculate the Expected Shortfall.
 
         Parameters:
         - Profit (ndarray): A NumPy array of profit values.
         - confidence (float): The confidence level (e.g., 0.95 for 95%).
 
         Returns:
-        - float: The CFETL value.
+        - float: The ES value.
         """
         # Calculate the quantile threshold
         quantile_alpha_pct = np.quantile(profit, 1 - confidence)  # In R: quantile(Profit, confidence)
@@ -357,7 +357,7 @@ class Contract:
             # Mean profit
             Pi_mean = np.mean(Pi)
             # Conditional expected tail loss
-            Psi = self.calculate_cfetl(Pi, confidence)
+            Psi = self.calculate_es(Pi, confidence)
             # Calculate RAROC
             RAROC = Pi_mean / (Pi_mean - Psi) if (Pi_mean - Psi) != 0 else float('inf')
             return RAROC

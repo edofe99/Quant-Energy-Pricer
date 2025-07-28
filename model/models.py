@@ -613,38 +613,34 @@ class LoadModel:
         '''
         
         self.df = data.copy()
-
-        self.seasonalParams = loadSeasonalModel.params
+        # TODO: add an assert to ensure the model is properly fitted
+        self.loadSeasonalModel = loadSeasonalModel
+        # self.seasonalParams = loadSeasonalModel.params
         self.stochasticGamma = loadStochasticModel.AR_coeff.iloc[1]
 
         self.seasonalVolatilityModel = loadSeasonalVolatilityModel
         self.seasonalVolatilityParams =  loadSeasonalVolatilityModel.params
-        
-
+    
         return
     
-    def simulateStochasticPart(self):
-        '''
-        Simulation of the stochastic part of the load.
-        '''
+    # NOTE: this function is redundant, to be deleted.
+    # def betaFunc(self, t , params ,S):
+    #     '''
+    #     Calculates the load model, assumed to be h(t) + beta * ln(SpotPrice)
 
-    def betaFunc(self, t , params ,S):
-        '''
-        Calculates the load model, assumed to be h(t) + beta * ln(SpotPrice)
-
-        Parameters:
-        - t: a time index. 
-        - params: parameters for the function.
-        - S: spot price at given time t.
-        '''
-        b0, b1, b2, b3, b4, beta = params
-        h_beta = (
-            b0 +
-            b1 * np.cos(2 * np.pi / 365 * (t - b2)) +
-            b3 * np.cos(4 * np.pi / 365 * (t - b4)) +
-            beta * np.log(S)
-        )
-        return h_beta
+    #     Parameters:
+    #     - t: a time index. 
+    #     - params: parameters for the function.
+    #     - S: spot price at given time t.
+    #     '''
+    #     b0, b1, b2, b3, b4, beta = params
+    #     h_beta = (
+    #         b0 +
+    #         b1 * np.cos(2 * np.pi / 365 * (t - b2)) +
+    #         b3 * np.cos(4 * np.pi / 365 * (t - b4)) +
+    #         beta * np.log(S)
+    #     )
+    #     return h_beta
 
     def simulateLoad(self,simulatedPrice):
         '''
@@ -657,12 +653,10 @@ class LoadModel:
         '''
         N = simulatedPrice.shape[1]
         days = len(simulatedPrice)
-        # Initialize arrays
-        starting_index = simulatedPrice.index[0]
-        #Load_sim = np.zeros((N, days))   # To store load simulations
-        y = np.zeros(N)                  # Initialize y for stochastic AR(1)
+        # Initialize y for stochastic AR(1)
+        y = np.zeros(N)                  
         
-        ### Calculating the standard deviations for each day
+        # Calculating the standard deviations for each day
         sigma_AR = np.sqrt(self.seasonalVolatilityModel.getCurve(simulatedPrice.index+1))
         simulations = np.zeros((days, N))
 
@@ -673,7 +667,8 @@ class LoadModel:
             # an array with lenght = 'days' but not indexed)
             
             # Add the seasonal part to the AR(1) part to get the load
-            simulationRow = self.betaFunc(simulatedPrice.index[i]+1, self.seasonalParams,simulatedPrice.iloc[i, :].values) + y
+            timeAndPrice = (simulatedPrice.index[i]+1, simulatedPrice.iloc[i, :].values)
+            simulationRow = self.loadSeasonalModel.calcModel(timeAndPrice, *self.loadSeasonalModel.params) + y
             
             # Store the row in the pre-allocated NumPy array
             simulations[i, :] = simulationRow
@@ -686,23 +681,24 @@ class LoadModel:
             
         return simulations_df
 
-    def getLoadSimulation(self):
-        '''
-        A function that simulates the load curve.
-        '''
-        simulated_load = pd.DataFrame()
-        ### Calculating the standard deviations for each day
-        simulated_load['SigmaAR'] = np.sqrt(self.seasonalVolatilityModel.sigma_sq_SeasonalFunction(np.arange(1,len(self.df)+1),self.seasonalVolatilityParams))    
+    # NOTE: old function, to be deleted
+    # def getLoadSimulation(self):
+    #     '''
+    #     A function that simulates the load curve.
+    #     '''
+    #     simulated_load = pd.DataFrame()
+    #     ### Calculating the standard deviations for each day
+    #     simulated_load['SigmaAR'] = np.sqrt(self.seasonalVolatilityModel.sigma_sq_SeasonalFunction(np.arange(1,len(self.df)+1),self.seasonalVolatilityParams))    
 
-        N = len(self.df.index)
-        y = np.zeros(N, dtype=float)
-        y[0] = self.df['Value'].iloc[0] - self.betaFunc(self.df.index[0]+1, self.seasonalParams, self.df['Close'].iloc[0])
+    #     N = len(self.df.index)
+    #     y = np.zeros(N, dtype=float)
+    #     y[0] = self.df['Value'].iloc[0] - self.betaFunc(self.df.index[0]+1, self.seasonalParams, self.df['Close'].iloc[0])
         
-        for i in range(1, N):
-            y[i] = self.stochasticGamma * y[i - 1] + simulated_load['SigmaAR'].iloc[i] * np.random.normal(0, 1)
+    #     for i in range(1, N):
+    #         y[i] = self.stochasticGamma * y[i - 1] + simulated_load['SigmaAR'].iloc[i] * np.random.normal(0, 1)
 
-        # ## Adding the seasonal / deterministic part to the stochastic part to get the final simulated loads
-        simulated_load['Simulation'] = self.betaFunc(self.df.index+1,self.seasonalParams,self.df['Close']) + y
-        #Load.sim <- h.beta.func(Time, h.beta.coeff, Price) + y
+    #     # ## Adding the seasonal / deterministic part to the stochastic part to get the final simulated loads
+    #     simulated_load['Simulation'] = self.betaFunc(self.df.index+1,self.seasonalParams,self.df['Close']) + y
+    #     #Load.sim <- h.beta.func(Time, h.beta.coeff, Price) + y
         
-        return simulated_load[['Simulation']]
+    #     return simulated_load[['Simulation']]
