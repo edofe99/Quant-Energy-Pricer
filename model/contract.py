@@ -134,7 +134,7 @@ class Contract:
         # Identify the tail observations (losses below the quantile)
         tail_obs = profit[profit < quantile_alpha_pct]
         # Calculate the mean of the tail observations
-        cfetl = np.mean(tail_obs) if len(tail_obs) > 0 else 0  # Handle empty tails gracefully
+        cfetl = np.mean(tail_obs) if len(tail_obs) > 0 else 0
         
         return cfetl
     
