@@ -218,17 +218,17 @@ class MainApp:
 
         # Define text strings
         text_strings = [
-            f"Contract Price: {self.mycontract.optimalPrice:.2f}€",
+            f"Optimal Price: {self.mycontract.optimalPrice:.2f}€",
+            f"Profit VaR(95%): {self.mycontract.var:.2f}€",
             f"Volume Risk: {self.mycontract.volume_risk_var:.2f}€",
-            f"Final Contract Price: {self.mycontract.volume_risk_var+self.mycontract.optimalPrice:.2f}€",
+            f"Final Price: {self.mycontract.volume_risk_var+abs(self.mycontract.var)+self.mycontract.optimalPrice:.2f}€",
             # f"Hurdle Rate: {self.mycontract.hurdleRate*100:.0f}%",
-            # f"VaR(95%): {self.mycontract.var:.3f}€",
         ]
 
         # Display the text strings in a 2x2 grid layout
         for i, text in enumerate(text_strings):
-            row = i // 3
-            col = i % 3
+            row = i // 4
+            col = i % 4
             label = ttk.Label(results_text_frame, text=text)
             label.grid(row=row, column=col, padx=15, pady=10, sticky="nsew")
 

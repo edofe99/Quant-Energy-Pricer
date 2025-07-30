@@ -642,4 +642,22 @@ class Contract:
         ax.set_ylabel("Load [Mwh]")
         self.figures.append(fig)
 
+        # Plot simulated load with average
+        # fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
+        # load = self.contractLoad
+        # load.index = self.fw_df.loc[load.index, 'Date'].values
+        # avg_load = self.contractAverageLoad
+        # avg_load.index = self.fw_df.loc[avg_load.index, 'Date'].values
+        # # Plot first 100 simulated paths with alpha 0.7
+        # load.iloc[:, :100].plot(ax=ax, alpha=0.2, legend=False)
+        # # Plot the contract average load with a label for the legend
+        # avg_load.plot(ax=ax, color= 'red', label='Average Load Curve', linewidth=2)
+        # # Set title and labels
+        # ax.set_title('Average Simulated Load Curve')
+        # ax.set_xlabel(None)
+        # ax.set_ylabel("Load [Mwh]")
+        # # ax.legend()
+        # self.figures.append(fig)
+
+
         return self
