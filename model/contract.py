@@ -395,7 +395,7 @@ class Contract:
         
         title_chart = f'Profit distribution with no hedging\n' \
               f'Contract Price: {self.optimalPrice:.2f}€ | ' \
-              f'Final Contract Price: {self.optimalPrice+self.volume_risk_var:.2f}€\n' \
+              f'Final Contract Price: {self.optimalPrice+self.var+self.volume_risk_var:.2f}€\n' \
               f'Expected profit: {expected_profit:.2f}{unit} | RAROC: {raroc:.2f} | ' \
               f'VAR(α={confidence*100:.0f}%): {self.var:.2f}{unit}'
 
